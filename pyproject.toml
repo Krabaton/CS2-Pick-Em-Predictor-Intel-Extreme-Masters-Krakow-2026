@@ -1,0 +1,16 @@
+[project]
+name = "pickem"
+version = "0.1.0"
+description = "CS2 Major Pick'Em predictor"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "choix>=0.4.1",
+    "numpy>=2.4.6",
+    "pandas>=3.0.3",
+    "requests>=2.34.2",
+    "scipy>=1.17.1",
+]
+
+[tool.uv]
+package = false
