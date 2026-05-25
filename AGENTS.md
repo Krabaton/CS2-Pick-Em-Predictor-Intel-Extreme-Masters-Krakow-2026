@@ -52,3 +52,9 @@ uv sync
 ## Стек
 
 - Python 3.14+, uv, pandas, numpy, scipy, requests, choix, beautifulsoup4
+
+## Документація
+
+- [`README.md`](README.md) / [`README.uk.md`](README.uk.md)
+- [`MODEL.md`](MODEL.md) / [`MODEL.uk.md`](MODEL.uk.md)
+- [`breef.md`](breef.md) — бриф (лише UK)

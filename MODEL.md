@@ -1,15 +1,17 @@
-# Математична модель Pick'Em Predictor
+**English** | [Українська](MODEL.uk.md)
 
-Короткий опис того, **що саме рахує система** і **як**.
+# Pick'Em Predictor — Mathematical Model
+
+Short description of **what the system computes** and **how**.
 
 ---
 
-## Загальна схема
+## Overview
 
 ```mermaid
 flowchart TD
     A[Liquipedia matches] --> B["Bradley-Terry (BO1 + BO3)"]
-    B --> C[Strength кожної команди]
+    B --> C[Team strength]
     C --> D["Monte Carlo Swiss (100k)"]
     D --> E["prob_3_0, prob_3_1, prob_3_2, ..."]
     E --> F[Pick'Em rules]
@@ -17,48 +19,48 @@ flowchart TD
     G --> H[stage report.md]
 ```
 
-**Не ML.** Параметри сили підбираються з історії матчів; решта — симуляція і combinatorics.
+Strength parameters are fit from match history; the rest is simulation and combinatorics.
 
 ---
 
-## 1. Bradley-Terry — сила команд
+## 1. Bradley-Terry — team strength
 
-Дві окремі моделі: **BO1** і **BO3**.
+Two separate models: **BO1** and **BO3**.
 
-Кожна команда $i$ має strength $s_i$. Ймовірність перемоги $A$ над $B$:
+Each team $i$ has strength $s_i$. Probability that $A$ beats $B$:
 
 $$
 P(A \text{ beats } B) = \frac{s_A}{s_A + s_B}
 $$
 
-Модель підбирає $\{s_i\}$ з усіх результатів матчів (fit через `choix`).
+The model fits $\{s_i\}$ from all match results (via `choix`).
 
-**Граф:** тренуємо на **всіх** опонентах з team files (MOUZ, tier-3…). Strengths повертаємо лише для 16 roster-команд.
+**Graph:** trained on **all** opponents in team files (MOUZ, tier-3, etc.). Strengths returned only for the 16 roster teams.
 
 ```mermaid
 flowchart LR
     M[Match history] --> W[Weighted graph]
     W --> F[choix fit]
-    F --> B[Blend з seed prior]
+    F --> B[Blend with seed prior]
     B --> S[Strengths BO1 / BO3]
 ```
 
-### Вага матчу
+### Match weight
 
-Свіжі ігри важать більше (exponential decay):
+Recent games matter more (exponential decay):
 
 $$
 \text{weight} = 0.5^{\,\text{age\_days}\,/\,30}
 $$
 
-- half-life = **30 днів**
-- cutoff = **180 днів** (старіше → weight $\approx 0$, skip)
+- half-life = **30 days**
+- cutoff = **180 days** (older → weight $\approx 0$, skip)
 
-Roster vs roster (обидві команди в stage) → **×4** до weight.
+Roster vs roster (both teams in stage) → **×4** on weight.
 
 ### Seed prior
 
-Якщо мало матчів проти roster-опонентів, strength змішується з prior за seed:
+If a team has few matches vs roster opponents, strength is blended with a seed-based prior:
 
 $$
 \text{prior}_i = \exp\bigl(-0.15 \cdot (\text{seed}_i - 1)\bigr)
@@ -76,16 +78,16 @@ $$
 
 ## 2. Monte Carlo Swiss
 
-**N ітерацій** (default 100k). Кожна — повний Swiss bracket:
+**N iterations** (default 100k). Each run simulates a full Swiss bracket:
 
-| Правило | Реалізація |
+| Rule | Implementation |
 | --- | --- |
-| R1 | 1v9, 2v10, …, 8v16 за seed |
-| Далі | Buchholz pairing, без реваншів |
-| BO1 | звичайні раунди |
-| BO3 | вирішальні (2-2, 2-0) |
+| R1 | 1v9, 2v10, …, 8v16 by seed |
+| Later | Buchholz pairing, no rematches |
+| BO1 | regular rounds |
+| BO3 | deciders (2-2, 2-0) |
 
-Після sim — фінальний record → bucket:
+After each sim — final record → bucket:
 
 ```mermaid
 flowchart TB
@@ -103,12 +105,12 @@ flowchart TB
     end
 ```
 
-| Bucket | Значення |
+| Bucket | Meaning |
 | --- | --- |
 | 3-0, 3-1, 3-2 | advance |
 | 0-3, 1-3, 2-3 | eliminated |
 
-Ймовірність bucket = частота по sim:
+Bucket probability = frequency over sims:
 
 $$
 P(3\text{-}1) \approx \frac{\text{count}(3\text{-}1)}{N}
@@ -118,49 +120,49 @@ $$
 P(\text{advance}) = P(3\text{-}0) + P(3\text{-}1) + P(3\text{-}2)
 $$
 
-Параметр `-i` / `--iterations` змінює $N$ (напр. `100k`, `200k`). Більше $N$ → менший шум, picks зазвичай ті самі.
+`-i` / `--iterations` sets $N$ (e.g. `100k`, `200k`). Higher $N$ → lower noise; picks usually unchanged.
 
 ---
 
 ## 3. Pick'Em selection
 
-Greedy rules поверх ймовірностей (не глобальна оптимізація):
+Greedy rules on top of probabilities (not global optimization):
 
-| Слот | Правило |
+| Slot | Rule |
 | --- | --- |
-| **3-0 ×2** | top-2 по $P(3\text{-}0)$ |
-| **Advance ×6** | top-6 по $P(\text{advance})$, без overlap з 3-0 |
-| **0-3 ×2** | top-2 по $P(0\text{-}3)$ |
+| **3-0 ×2** | top-2 by $P(3\text{-}0)$ |
+| **Advance ×6** | top-6 by $P(\text{advance})$, no overlap with 3-0 |
+| **0-3 ×2** | top-2 by $P(0\text{-}3)$ |
 
-**Seed guard (0-3):** seed $\leq 8$ і $P(0\text{-}3) < 0.20$ → skip, беремо наступну.
+**Seed guard (0-3):** seed $\leq 8$ and $P(0\text{-}3) < 0.20$ → skip, take next team.
 
-Advance = «вийдуть» (3-1 або 3-2), без label біля кожної команди.
+Advance = teams that qualify (3-1 or 3-2), no per-team path label.
 
 ---
 
 ## 4. Poisson Binomial
 
-10 picks з різними $p_i$. Шанс вгадати **≥ 5**:
+10 picks with different $p_i$. Chance of **≥ 5** correct:
 
 $$
 P(\geq 5) = \sum_{k=5}^{10} P(\text{exactly } k)
 $$
 
-Рахується DP за $O(n^2)$, бо picks незалежні з різними ймовірностями (не звичайний binomial).
+Computed by DP in $O(n^2)$ — picks are independent with different probabilities (not ordinary binomial).
 
 ---
 
-## Що модель робить / не робить
+## What the model does / doesn't do
 
 | ✓ | ✗ |
 | --- | --- |
-| Статистичний рейтинг з історії | Neural nets / ML pipeline |
+| Statistical rating from history | Neural nets / ML pipeline |
 | Swiss bracket structure (seed R1) | Momentum, roster changes |
-| Свіжа форма (decay 30d) | Глобальна оптимізація Pick'Em |
-| Marginal probabilities | Конкретний path bracket |
+| Recent form (30d decay) | Global Pick'Em optimization |
+| Marginal probabilities | Specific bracket path |
 
 ---
 
-## Одне речення
+## One sentence
 
-> **BT оцінює силу → Monte Carlo прогнозує Swiss → правила обирають picks → Poisson Binomial рахує шанс 5+/10.**
+> **BT estimates strength → Monte Carlo simulates Swiss → rules select picks → Poisson Binomial computes P(≥5).**

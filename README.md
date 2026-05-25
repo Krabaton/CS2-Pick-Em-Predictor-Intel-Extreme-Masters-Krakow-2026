@@ -1,35 +1,37 @@
+**English** | [Українська](README.uk.md)
+
 # CS2 Pick'Em Predictor
 
-Статистичний предиктор для **Steam Pick'Em** на **IEM Cologne Major 2026**. Збирає матчі з Liquipedia, оцінює силу команд, симулює Swiss/Playoffs і генерує Markdown-репорт з ймовірностями та recommended picks.
+Statistical predictor for **Steam Pick'Em** at **IEM Cologne Major 2026**. Fetches matches from Liquipedia, estimates team strength, simulates Swiss/Playoffs, and writes a Markdown report with probabilities and recommended picks.
 
 ---
 
-## Для чого
+## What it's for
 
-- Підготувати **Pick'Em** перед Stage 1 / 2 / 3 або Playoffs
-- Побачити **marginal probabilities** (3-0, 3-1, 3-2, 0-3…) для кожної команди
-- Оцінити **шанс набрати ≥5/10** правильних picks (Poisson Binomial)
-- Швидко перерахувати прогноз після `scrape` — без ручного збору stats
+- Prepare **Pick'Em** before Stage 1 / 2 / 3 or Playoffs
+- See **marginal probabilities** (3-0, 3-1, 3-2, 0-3…) per team
+- Estimate **chance of ≥5/10** correct picks (Poisson Binomial)
+- Re-run forecasts after `scrape` without manual stat gathering
 
-Турнір захардкодений: `Intel_Extreme_Masters/2026/Cologne` (`pickem.py` → `TOURNAMENT`).
+Tournament is hardcoded: `Intel_Extreme_Masters/2026/Cologne` (`pickem.py` → `TOURNAMENT`).
 
 ---
 
-## Звідки це взялось (бриф)
+## Origin (brief)
 
-Оригінальна задача — [`breef.md`](breef.md). Коротко, що там було:
+Original task spec — [`breef.md`](breef.md) (Ukrainian only). Summary:
 
-1. **Scrape** — roster стейджу + match history з Liquipedia (6 міс, кеш)
-2. **Bradley-Terry** — окремо BO1 і BO3, strengths з історії матчів
-3. **Monte Carlo Swiss** — 100k sim за правилами Valve
+1. **Scrape** — stage roster + match history from Liquipedia (6 months, cache)
+2. **Bradley-Terry** — separate BO1 and BO3, strengths from match history
+3. **Monte Carlo Swiss** — 100k sims under Valve rules
 4. **Pick'Em** — top-2 3-0, top-6 advance, top-2 0-3 + `prob_at_least_5`
 5. **Output** — `stage{N}_report.md`
 
-Реалізація пішла далі брифу: exponential decay, roster weight ×4, seed prior, 6 Swiss-кошиків, seed guard для 0-3, two-phase CLI (`scrape` / `analyze`). Деталі — [`MODEL.md`](MODEL.md).
+Implementation went beyond the brief: exponential decay, roster weight ×4, seed prior, 6 Swiss buckets, 0-3 seed guard, two-phase CLI (`scrape` / `analyze`). Details — [`MODEL.md`](MODEL.md).
 
 ---
 
-## Швидкий старт
+## Quick start
 
 ```bash
 uv sync
@@ -37,15 +39,15 @@ uv run python pickem.py scrape 1
 uv run python pickem.py analyze 1
 ```
 
-Результат: **`stage1_report.md`** у корені проєкту. Приклад репорту комітиться в repo — можна подивитись результат без `scrape`.
+Output: **`stage1_report.md`** in the project root. Sample reports are committed so you can view results without running `scrape`.
 
 ```bash
-uv run python pickem.py analyze 1 -i 200k   # більше MC ітерацій
+uv run python pickem.py analyze 1 -i 200k   # more MC iterations
 ```
 
 ---
 
-## Як користуватись
+## Usage
 
 ### Workflow
 
@@ -56,18 +58,18 @@ flowchart LR
     C --> D[stageN_report.md]
 ```
 
-| Крок | Команда | HTTP | Результат |
+| Step | Command | HTTP | Output |
 | --- | --- | --- | --- |
-| 1 | `scrape N` | Так* | `data/rosters/`, `data/teams/` |
-| 2 | `analyze N` | **Ні** | `stage{N}_report.md` |
+| 1 | `scrape N` | Yes* | `data/rosters/`, `data/teams/` |
+| 2 | `analyze N` | **No** | `stage{N}_report.md` |
 
-\* Default scrape читає `cache/` — 0 HTTP якщо сторінки вже качали.
+\* Default scrape reads `cache/` — 0 HTTP if pages were fetched before.
 
-**Коли що запускати:**
+**When to run what:**
 
-- **Перед стейджем** — `scrape` + `analyze`
-- **Після нових ігор на major** — `scrape N --fresh`, потім `analyze`
-- **Експерименти з MC** — лише `analyze` (офлайн, швидко)
+- **Before a stage** — `scrape` + `analyze`
+- **After new major games** — `scrape N --fresh`, then `analyze`
+- **MC experiments** — `analyze` only (offline, fast)
 
 ### Scrape
 
@@ -79,12 +81,12 @@ uv run python pickem.py scrape 4      # Playoffs roster
 uv run python pickem.py scrape 1 --fresh   # bypass cache, hit Liquipedia
 ```
 
-| Флаг | Опис |
+| Flag | Description |
 | --- | --- |
-| `--fresh` | Ігнорувати `cache/`, заново тягнути з LP |
-| `--quiet` | Менше логів |
+| `--fresh` | Ignore `cache/`, re-fetch from Liquipedia |
+| `--quiet` | Less logging |
 
-Incremental merge: у `data/teams/` додаються лише **нові** матчі (dedupe pair+date).
+Incremental merge: `data/teams/` only gets **new** matches (dedupe by pair+date).
 
 ### Analyze
 
@@ -94,70 +96,71 @@ uv run python pickem.py analyze 1 -i 200k
 uv run python pickem.py analyze 1 --iterations 200000
 ```
 
-| Флаг | Опис |
+| Flag | Description |
 | --- | --- |
-| `-i`, `--iterations` | Monte Carlo: `100k` default, `200k` для меншого шуму |
-| `--quiet` | Менше логів |
+| `-i`, `--iterations` | Monte Carlo: `100k` default, `200k` for lower noise |
+| `--quiet` | Less logging |
 
-Потрібен готовий `data/` — спочатку `scrape`.
+Requires `data/` from a prior `scrape`.
 
 ---
 
-## Документація проєкту
+## Documentation
 
-| Файл | Що там |
+| File | Contents |
 | --- | --- |
-| [`breef.md`](breef.md) | Оригінальний бриф задачі |
-| [`MODEL.md`](MODEL.md) | Математична модель: BT, decay, MC Swiss, Pick'Em, формули (GitHub Math) |
-| [`AGENTS.md`](AGENTS.md) | Архітектура для розробки / AI-агентів |
-| `stage{N}_report.md` | Output — таблиця ймовірностей + recommended Pick'Em (комітиться як приклад) |
+| [`breef.md`](breef.md) | Original task brief (UK) |
+| [`MODEL.md`](MODEL.md) | Mathematical model (EN) |
+| [`MODEL.uk.md`](MODEL.uk.md) | Математична модель (UK) |
+| [`AGENTS.md`](AGENTS.md) | Architecture for development / AI agents |
+| `stage{N}_report.md` | Output — probability table + recommended Pick'Em |
 
 ---
 
-## Stage report — що всередині
+## Stage report
 
-Файл `stage1_report.md`, `stage2_report.md` … генерується в **корені проєкту** командою `analyze`. Комітиться в git, щоб можна було побачити результат без Liquipedia (без 429). Після нового `analyze` — оновлюй і коміть, якщо хочеш поділитись свіжим прогнозом.
+`stage1_report.md`, `stage2_report.md`, … are generated in the **project root** by `analyze`. Committed to git so results are visible without Liquipedia. Re-commit after a new `analyze` to share an updated forecast.
 
-**1. Таблиця ймовірностей** — 16 команд × 6 Swiss-кошиків:
+**1. Probability table** — 16 teams × 6 Swiss buckets:
 
-| Колонка | Значення |
+| Column | Meaning |
 | --- | --- |
-| 3-0, 3-1, 3-2 | вихід з різним record |
+| 3-0, 3-1, 3-2 | advance with that record |
 | Advance | 3-0 + 3-1 + 3-2 |
-| 0-3, 1-3, 2-3 | виліт |
+| 0-3, 1-3, 2-3 | eliminated |
 
 **2. Recommended Pick'Em:**
 
-| Слот | Логіка |
+| Slot | Rule |
 | --- | --- |
-| **3-0 ×2** | top-2 по P(3-0) |
-| **Advance ×6** | top-6 по P(advance), без overlap з 3-0 |
-| **0-3 ×2** | top-2 по P(0-3), seed guard (seed ≤8, prob < 20% → skip) |
-| **prob_at_least_5** | Poisson Binomial для 10 picks |
+| **3-0 ×2** | top-2 by P(3-0) |
+| **Advance ×6** | top-6 by P(advance), no overlap with 3-0 |
+| **0-3 ×2** | top-2 by P(0-3), seed guard (seed ≤8, prob < 20% → skip) |
+| **prob_at_least_5** | Poisson Binomial over 10 picks |
 
 ---
 
-## Структура проєкту
+## Project structure
 
 ```mermaid
 flowchart TB
-    subgraph docs [Документація]
-        README[README.md]
+    subgraph docs [Documentation]
+        README[README.md / README.uk.md]
         BRIEF[breef.md]
-        MODEL[MODEL.md]
+        MODEL[MODEL.md / MODEL.uk.md]
         AGENTS[AGENTS.md]
     end
     subgraph cli [CLI]
         PICKEM[pickem.py]
     end
-    subgraph core [Логіка]
+    subgraph core [Core]
         LP[liquipedia.py]
         MOD[models.py]
         SW[swiss.py]
         PL[pickem_logic.py]
         RP[report.py]
     end
-    subgraph io [Дані]
+    subgraph io [Data]
         CACHE[cache/]
         DATA[data/]
         REPORT[stageN_report.md]
@@ -171,42 +174,42 @@ flowchart TB
     RP --> REPORT
 ```
 
-| Шлях | Опис |
+| Path | Description |
 | --- | --- |
 | `pickem.py` | CLI: `scrape` / `analyze` |
-| `liquipedia.py` | Liquipedia API, парсинг, disk cache |
+| `liquipedia.py` | Liquipedia API, parsing, disk cache |
 | `models.py` | Bradley-Terry (BO1 + BO3) |
 | `swiss.py` | Monte Carlo Swiss |
 | `bracket.py` | Monte Carlo Playoffs (stage 4) |
 | `pickem_logic.py` | Pick'Em rules + Poisson Binomial |
-| `report.py` | Markdown-генератор |
+| `report.py` | Markdown report generator |
 | `cache/` | Raw API JSON (SHA256 keys), gitignored |
-| `data/rosters/IEM_Cologne_2026/stage{N}.json` | 16 команд + seeds |
+| `data/rosters/IEM_Cologne_2026/stage{N}.json` | 16 teams + seeds |
 | `data/teams/{Team}.json` | Match history (incremental) |
-| `stage{N}_report.md` | Output репорт (комітиться) |
+| `stage{N}_report.md` | Output report (committed) |
 
 ---
 
-## Модель (одним абзацом)
+## Model (one paragraph)
 
-Bradley-Terry оцінює strength кожної команди з weighted match history → Monte Carlo прогоняє 100k Swiss brackets → правила обирають picks → Poisson Binomial рахує P(≥5).
+Bradley-Terry estimates team strength from weighted match history → Monte Carlo runs 100k Swiss brackets → rules pick teams → Poisson Binomial computes P(≥5).
 
-Детально з формулами і Mermaid-схемами: **[`MODEL.md`](MODEL.md)**.
+Full write-up with formulas: **[`MODEL.md`](MODEL.md)**.
 
 ---
 
 ## Troubleshooting
 
-| Проблема | Рішення |
+| Issue | Fix |
 | --- | --- |
-| `Roster not found` | Спочатку `scrape N` |
-| `Team data not found` | Scrape не завершився — перезапусти |
-| HTTP 429 від LP | Не спам `--fresh`; default cache-on безпечніший |
-| Старі матчі | `scrape N --fresh` після нових ігор |
+| `Roster not found` | Run `scrape N` first |
+| `Team data not found` | Scrape failed — re-run |
+| HTTP 429 from LP | Don't spam `--fresh`; default cache-on is safer |
+| Stale matches | `scrape N --fresh` after new games |
 
 ---
 
-## Вимоги
+## Requirements
 
 - Python **3.14+**
 - [uv](https://docs.astral.sh/uv/)
@@ -215,8 +218,8 @@ Bradley-Terry оцінює strength кожної команди з weighted matc
 uv sync
 ```
 
-Стек: numpy, scipy, pandas, requests, choix, beautifulsoup4.
+Stack: numpy, scipy, pandas, requests, choix, beautifulsoup4.
 
 ---
 
-*Вибачте, [Liquipedia](https://liquipedia.net/counterstrike), що спамили ваш API і забирали дані. Обіцяємо, що `cache/` — це наш спосіб більше не турбувати.*
+*Sorry, [Liquipedia](https://liquipedia.net/counterstrike), for spamming your API and taking your data. We promise `cache/` is our way of bothering you less.*
