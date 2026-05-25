@@ -50,7 +50,7 @@ flowchart LR
 Свіжі ігри важать більше (exponential decay):
 
 $$
-\text{weight} = 0.5^{\,\text{age\_days}\,/\,30}
+\text{weight} = 0.5^{\,\text{age_\text{days}}\,/\,30}
 $$
 
 - half-life = **30 днів**
@@ -71,7 +71,7 @@ s_i^{\text{final}} = \lambda \cdot s_i^{\text{BT}} + (1 - \lambda) \cdot \text{p
 $$
 
 $$
-\lambda = \min\left(1,\; \frac{\text{roster\_matches}_i}{8}\right)
+\lambda = \min\left(1,\; \frac{\text{roster_{\text{matches}}}_i}{8}\right)
 $$
 
 ---
@@ -80,12 +80,12 @@ $$
 
 **N ітерацій** (default 100k). Кожна — повний Swiss bracket:
 
-| Правило | Реалізація |
-| --- | --- |
-| R1 | 1v9, 2v10, …, 8v16 за seed |
-| Далі | Buchholz pairing, без реваншів |
-| BO1 | звичайні раунди |
-| BO3 | вирішальні (2-2, 2-0) |
+| Правило | Реалізація                     |
+| ------- | ------------------------------ |
+| R1      | 1v9, 2v10, …, 8v16 за seed     |
+| Далі    | Buchholz pairing, без реваншів |
+| BO1     | звичайні раунди                |
+| BO3     | вирішальні (2-2, 2-0)          |
 
 Після sim — фінальний record → bucket:
 
@@ -105,9 +105,9 @@ flowchart TB
     end
 ```
 
-| Bucket | Значення |
-| --- | --- |
-| 3-0, 3-1, 3-2 | advance |
+| Bucket        | Значення   |
+| ------------- | ---------- |
+| 3-0, 3-1, 3-2 | advance    |
 | 0-3, 1-3, 2-3 | eliminated |
 
 Ймовірність bucket = частота по sim:
@@ -128,11 +128,11 @@ $$
 
 Greedy rules поверх ймовірностей (не глобальна оптимізація):
 
-| Слот | Правило |
-| --- | --- |
-| **3-0 ×2** | top-2 по $P(3\text{-}0)$ |
+| Слот           | Правило                                         |
+| -------------- | ----------------------------------------------- |
+| **3-0 ×2**     | top-2 по $P(3\text{-}0)$                        |
 | **Advance ×6** | top-6 по $P(\text{advance})$, без overlap з 3-0 |
-| **0-3 ×2** | top-2 по $P(0\text{-}3)$ |
+| **0-3 ×2**     | top-2 по $P(0\text{-}3)$                        |
 
 **Seed guard (0-3):** seed $\leq 8$ і $P(0\text{-}3) < 0.20$ → skip, беремо наступну.
 
@@ -154,12 +154,12 @@ $$
 
 ## Що модель робить / не робить
 
-| ✓ | ✗ |
-| --- | --- |
-| Статистичний рейтинг з історії | Neural nets / ML pipeline |
-| Swiss bracket structure (seed R1) | Momentum, roster changes |
-| Свіжа форма (decay 30d) | Глобальна оптимізація Pick'Em |
-| Marginal probabilities | Конкретний path bracket |
+| ✓                                 | ✗                             |
+| --------------------------------- | ----------------------------- |
+| Статистичний рейтинг з історії    | Neural nets / ML pipeline     |
+| Swiss bracket structure (seed R1) | Momentum, roster changes      |
+| Свіжа форма (decay 30d)           | Глобальна оптимізація Pick'Em |
+| Marginal probabilities            | Конкретний path bracket       |
 
 ---
 
