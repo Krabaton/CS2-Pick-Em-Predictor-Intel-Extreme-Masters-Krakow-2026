@@ -50,7 +50,7 @@ flowchart LR
 Recent games matter more (exponential decay):
 
 $$
-\text{weight} = 0.5^{\,\text{age\_days}\,/\,30}
+\text{weight} = 0.5^{\,\mathrm{ageDays}/30}
 $$
 
 - half-life = **30 days**
@@ -71,7 +71,7 @@ s_i^{\text{final}} = \lambda \cdot s_i^{\text{BT}} + (1 - \lambda) \cdot \text{p
 $$
 
 $$
-\lambda = \min\left(1,\; \frac{\text{roster\_matches}_i}{8}\right)
+\lambda = \min\left(1,\; \frac{\text{rosterMatches}_i}{8}\right)
 $$
 
 ---
@@ -80,12 +80,12 @@ $$
 
 **N iterations** (default 100k). Each run simulates a full Swiss bracket:
 
-| Rule | Implementation |
-| --- | --- |
-| R1 | 1v9, 2v10, …, 8v16 by seed |
+| Rule  | Implementation                 |
+| ----- | ------------------------------ |
+| R1    | 1v9, 2v10, …, 8v16 by seed     |
 | Later | Buchholz pairing, no rematches |
-| BO1 | regular rounds |
-| BO3 | deciders (2-2, 2-0) |
+| BO1   | regular rounds                 |
+| BO3   | deciders (2-2, 2-0)            |
 
 After each sim — final record → bucket:
 
@@ -105,9 +105,9 @@ flowchart TB
     end
 ```
 
-| Bucket | Meaning |
-| --- | --- |
-| 3-0, 3-1, 3-2 | advance |
+| Bucket        | Meaning    |
+| ------------- | ---------- |
+| 3-0, 3-1, 3-2 | advance    |
 | 0-3, 1-3, 2-3 | eliminated |
 
 Bucket probability = frequency over sims:
@@ -128,11 +128,11 @@ $$
 
 Greedy rules on top of probabilities (not global optimization):
 
-| Slot | Rule |
-| --- | --- |
-| **3-0 ×2** | top-2 by $P(3\text{-}0)$ |
+| Slot           | Rule                                              |
+| -------------- | ------------------------------------------------- |
+| **3-0 ×2**     | top-2 by $P(3\text{-}0)$                          |
 | **Advance ×6** | top-6 by $P(\text{advance})$, no overlap with 3-0 |
-| **0-3 ×2** | top-2 by $P(0\text{-}3)$ |
+| **0-3 ×2**     | top-2 by $P(0\text{-}3)$                          |
 
 **Seed guard (0-3):** seed $\leq 8$ and $P(0\text{-}3) < 0.20$ → skip, take next team.
 
@@ -154,12 +154,12 @@ Computed by DP in $O(n^2)$ — picks are independent with different probabilitie
 
 ## What the model does / doesn't do
 
-| ✓ | ✗ |
-| --- | --- |
-| Statistical rating from history | Neural nets / ML pipeline |
-| Swiss bracket structure (seed R1) | Momentum, roster changes |
-| Recent form (30d decay) | Global Pick'Em optimization |
-| Marginal probabilities | Specific bracket path |
+| ✓                                 | ✗                           |
+| --------------------------------- | --------------------------- |
+| Statistical rating from history   | Neural nets / ML pipeline   |
+| Swiss bracket structure (seed R1) | Momentum, roster changes    |
+| Recent form (30d decay)           | Global Pick'Em optimization |
+| Marginal probabilities            | Specific bracket path       |
 
 ---
 

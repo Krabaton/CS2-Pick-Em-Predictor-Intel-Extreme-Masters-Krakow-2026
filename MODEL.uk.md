@@ -50,7 +50,7 @@ flowchart LR
 Свіжі ігри важать більше (exponential decay):
 
 $$
-\text{weight} = 0.5^{\,\text{age_\text{days}}\,/\,30}
+\text{weight} = 0.5^{\,\mathrm{ageDays}/30}
 $$
 
 - half-life = **30 днів**
@@ -71,7 +71,7 @@ s_i^{\text{final}} = \lambda \cdot s_i^{\text{BT}} + (1 - \lambda) \cdot \text{p
 $$
 
 $$
-\lambda = \min\left(1,\; \frac{\text{roster_{\text{matches}}}_i}{8}\right)
+\lambda = \min\left(1,\; \frac{\text{rosterMatches}_i}{8}\right)
 $$
 
 ---
