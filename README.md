@@ -222,4 +222,10 @@ Stack: numpy, scipy, pandas, requests, choix, beautifulsoup4.
 
 ---
 
+## Development
+
+Part of this project was built with [Cursor](https://cursor.com) using **Composer 2.5**.
+
+---
+
 *Sorry, [Liquipedia](https://liquipedia.net/counterstrike), for spamming your API and taking your data. We promise `cache/` is our way of bothering you less.*

@@ -222,4 +222,10 @@ uv sync
 
 ---
 
+## Розробка
+
+Частину проєкту зібрано в [Cursor](https://cursor.com) з **Composer 2.5**.
+
+---
+
 *Вибачте, [Liquipedia](https://liquipedia.net/counterstrike), що спамили ваш API і забирали дані. Обіцяємо, що `cache/` — це наш спосіб більше не турбувати.*
