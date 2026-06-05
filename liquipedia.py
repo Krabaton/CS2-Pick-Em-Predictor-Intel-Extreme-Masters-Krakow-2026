@@ -213,6 +213,8 @@ TEAM_SLUG_ALIASES: dict[str, str] = {
     "gaimin": "Gaimin Gladiators",
     "sinners": "SINNERS Esports",
     "thunderdownunder": "THUNDERdOWNUNDER",
+    "fut": "FUT Esports",
+    "9z": "9z Team",
 }
 
 
