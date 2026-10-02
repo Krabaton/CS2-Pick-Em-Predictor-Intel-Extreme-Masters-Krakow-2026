@@ -1,6 +1,6 @@
 **English** | [Українська](README.uk.md)
 
-# CS2 Pick'Em Predictor
+# Counter Strike 2 Pick'Em Predictor
 
 Statistical predictor for **Steam Pick'Em** at **IEM Cologne Major 2026**. Fetches matches from Liquipedia, estimates team strength, simulates Swiss/Playoffs, and writes a Markdown report with probabilities and recommended picks.
 
